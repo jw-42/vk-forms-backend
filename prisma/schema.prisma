@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DB_URL")
+}
+
+model Role {
+  id   BigInt @id @default(autoincrement())
+  name String @unique
+  user User[]
+}
+
+model User {
+  id         BigInt         @id @unique @default(autoincrement())
+  role_id    BigInt
+  vk_user_id BigInt?        @unique
+  created_at DateTime       @default(now())
+  traffic    Traffic[]
+  role       Role           @relation(fields: [role_id], references: [id])
+  form       Form[]
+  answers    AnswersGroup[]
+}
+
+model Traffic {
+  id                           BigInt  @id @unique @default(autoincrement())
+  vk_user_id                   BigInt?
+  vk_app_id                    BigInt?
+  vk_chat_id                   BigInt?
+  vk_is_app_user               Int?
+  vk_are_notifications_enabled Int?
+  vk_language                  String?
+  vk_ref                       String?
+  vk_access_token_settings     String?
+  vk_group_id                  BigInt?
+  vk_viewer_group_role         String?
+  vk_platform                  String?
+  vk_is_favorite               Int?
+  vk_ts                        BigInt?
+  vk_is_recommended            Int?
+  vk_profile_id                BigInt?
+  vk_has_profile_button        Int?
+  vk_testing_group_id          BigInt?
+  sign                         String?
+  odr_enabled                  Int?
+  user                         User?   @relation(fields: [vk_user_id], references: [vk_user_id])
+}
+
+model Form {
+  id          BigInt         @id @unique @default(autoincrement())
+  owner_id    BigInt
+  enable      Boolean        @default(true)
+  is_banned   Boolean        @default(false)
+  title       String         @db.VarChar(64)
+  description String         @db.VarChar(255)
+  created_at  DateTime       @default(now())
+  updated_at  DateTime?      @default(now())
+  user        User           @relation(fields: [owner_id], references: [id])
+  question    Question[]
+  answers     AnswersGroup[]
+}
+
+model Question {
+  id         BigInt    @id @unique @default(autoincrement())
+  form_id    BigInt
+  type       String
+  is_deleted Boolean   @default(false)
+  text       String    @db.VarChar(128)
+  form       Form      @relation(fields: [form_id], references: [id])
+  option     Option[]
+  answers    Answers[]
+}
+
+model Option {
+  id          BigInt    @id @unique @default(autoincrement())
+  question_id BigInt
+  is_deleted  Boolean   @default(false)
+  text        String    @db.VarChar(64)
+  question    Question  @relation(fields: [question_id], references: [id])
+  answers     Answers[]
+}
+
+model AnswersGroup {
+  id        BigInt    @id @unique @default(autoincrement())
+  form_id   BigInt
+  owner_id  BigInt
+  completed Boolean   @default(false)
+  form      Form      @relation(fields: [form_id], references: [id])
+  owner     User      @relation(fields: [owner_id], references: [id])
+  answers   Answers[]
+}
+
+model Answers {
+  id               BigInt       @unique @default(autoincrement())
+  answers_group_id BigInt
+  question_id      BigInt
+  option_id        BigInt?
+  value            String?      @db.VarChar(255)
+  group            AnswersGroup @relation(fields: [answers_group_id], references: [id])
+  question         Question     @relation(fields: [question_id], references: [id])
+  option           Option?      @relation(fields: [option_id], references: [id])
+}
