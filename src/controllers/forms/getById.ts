@@ -48,12 +48,14 @@ export const getById = factory.createHandlers(
         form === null ||
         (form.is_banned && c.get("role") < 4) ||
         (!form.enable && form.owner_id !== c.get("uid") && c.get("role") < 4)
-      )
+      ) {
         throw ApiError.badRequest();
+      }
 
       return c.json({
         response: {
           ...form,
+          can_edit: form.owner_id === BigInt(c.get("uid")),
           owner_id: undefined,
         },
       });
