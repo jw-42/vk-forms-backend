@@ -45,6 +45,18 @@ export const getAll = factory.createHandlers(async (c: Context, next: Next) => {
             text: true,
           },
         },
+        answers: {
+          where: {
+            group: {
+              completed: false,
+              form_id: validateSchema.data.form_id
+            }
+          },
+          select: {
+            option_id: true,
+            value: true
+          }
+        }
       },
       orderBy: [
         { id: "asc" }
